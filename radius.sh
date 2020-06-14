@@ -38,6 +38,7 @@ ln -s ../mods-available/inner-eap ../mods-enabled/inner-eap
 systemctl restart radiusd
 
 yum -y install firewalld
+systemctl start firewalld
 systemctl enable firewalld
 firewall-cmd --permanent --zone=public --add-rich-rule='rule family="ipv4" port="3306/tcp" source address="SITEIP/32" accept'
 firewall-cmd --permanent --new-ipset=vpnservers --type=hash:ip
