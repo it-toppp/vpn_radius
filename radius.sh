@@ -2,12 +2,11 @@
 VPNIP=
 RADPASS=
 MYPASS=
-VPNIP=
+SITEIP=
 
-yum -y install freeradius freeradius-mysql freeradius-utils mysql mysql-devel mysql-server
+yum -y install freeradius freeradius-mysql freeradius-utils mysql mysql-devel mysql-server git
 systemctl start mysqld && systemctl enable mysqld
 
-MYPWD=byrfgcekzwbz
 sudo mysql_secure_installation  <<MSI2
 
 y
@@ -21,7 +20,7 @@ y
 MSI2
 
 systemctl restart mysqld
-mysql -uroot –p$MYPASS -e "CREATE DATABASE radius DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+mysql -uroot -p$MYPASS -e "CREATE DATABASE radius DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
 mysql -uroot -p$MYPASS radius < /etc/raddb/mods-config/sql/main/mysql/schema.sql /etc/raddb/mods-config/sql/main/mysql
  
 cat > /etc/raddb/clients.conf << HERE
@@ -31,7 +30,11 @@ client server-1 {
      	shortname   	= server-1 
 }
 HERE
-   
+
+git clone https://github.com/it-toppp/vpn_radius.git
+cd vpn_radius
+cp -r raddb/* /etc/raddb/mods-available/
+
 cd /etc/raddb/mods-available/
 ln -s ../mods-available/inner-eap ../mods-enabled/inner-eap
 
