@@ -1,12 +1,10 @@
+  
+#!/bin/bash
+
 VPNIP=78.47.147.162
 RADPASS=BXdh3DlSi
 MYPASS=rerehtre
 SITEIP=1.1.1.1
-
-#VPNIP=
-#RADPASS=
-#MYPASS=
-#SITEIP=
 
 yum -y install freeradius freeradius-mysql freeradius-utils mariadb mariadb-devel mariadb-server git
 systemctl start mariadb && systemctl enable mariadb
