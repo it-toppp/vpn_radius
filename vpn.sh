@@ -1,9 +1,9 @@
 #!/bin/bash
 echo -n "Please set VPN_SERVER_NAME and press [ENTER]. Example: node1.ultavpn.com:  "
 read VPNNOD
-echo -n "Please set IP_RADIUS_SERVER and press [ENTER]
+echo -n "Please set IP_RADIUS_SERVER and press [ENTER]:  "
 read RADSRV
-echo -n "Please set PASSWORD_RADIUS_SERVER and press [ENTER]
+echo -n "Please set PASSWORD_RADIUS_SERVER and press [ENTER]:  "
 read RADPASS
 VPNIP=$(curl ifconfig.me)
 DIG_IP=$(getent ahostsv4 $SYNAPSE_DOMAIN | sed -n 's/ *STREAM.*//p')
