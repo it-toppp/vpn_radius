@@ -5,9 +5,6 @@ echo -n "Please set IP_RADIUS_SERVER and press [ENTER]
 read RADSRV
 echo -n "Please set PASSWORD_RADIUS_SERVER and press [ENTER]
 read RADPASS
-#RADSRV=
-#RADPASS=
-#VPNNOD=
 VPNIP=$(curl ifconfig.me)
 DIG_IP=$(getent ahostsv4 $SYNAPSE_DOMAIN | sed -n 's/ *STREAM.*//p')
 #(getent hosts $SYNAPSE_DOMAIN | awk '{ print $1 }')
@@ -58,6 +55,7 @@ ipcp-accept-local
 ipcp-accept-remote
 ms-dns  8.8.8.8
 ms-dns  1.1.1.1
+ms-dns  10.1.0.1
 noccp
 auth
 crtscts
@@ -65,13 +63,13 @@ idle 1800
 mtu 1460
 mru 1460
 nodefaultroute
+#debug
 lock
 proxyarp
 connect-delay 5000
 plugin radius.so
 plugin radattr.so
 HERE
-
 
 cat >  /etc/strongswan/ipsec.secrets << HERE
 : RSA "/etc/strongswan/ipsec.d/certs/privkey.pem"
@@ -88,8 +86,9 @@ HERE
 
 cat > /etc/ppp/options.pptpd << HERE
 name pptpd
-authentication.
-require-pap mppe.o
+refuse-chap
+refuse-mschap
+require-pap
 ms-dns 8.8.8.8
 ms-dns 1.1.1.1
 proxyarp
@@ -101,6 +100,86 @@ nologfd
 plugin radius.so
 plugin radattr.so
 HERE
+
+cat > /etc/radiusclient/radiusclient.conf << HERE
+auth_order  radius,local
+login_tries 4
+login_timeout       60
+nologin /etc/nologin
+issue       /etc/radiusclient/issue
+authserver  $RADSRV
+acctserver  $RADSRV
+servers             /etc/radiusclient/servers
+dictionary  /etc/radiusclient/dictionary
+login_radius /usr/sbin/login.radius
+mapfile             /etc/radiusclient/port-id-map
+seqfile /var/run/radius.seq
+default_realm
+radius_timeout      10
+radius_retries      3
+radius_deadtime     0
+bindaddr *
+login_local /bin/login
+HERE
+
+cat > /etc/radiusclient/dictionary.microsoft << HERE
+VENDOR           Microsoft                       311
+ATTRIBUTE        MS-CHAP-Response                        1       string  Microsoft
+ATTRIBUTE        MS-CHAP-Error                           2       string  Microsoft
+ATTRIBUTE        MS-CHAP-CPW-1                           3       string  Microsoft
+ATTRIBUTE        MS-CHAP-CPW-2                           4       string  Microsoft
+ATTRIBUTE        MS-CHAP-LM-Enc-PW                       5       string  Microsoft
+ATTRIBUTE        MS-CHAP-NT-Enc-PW                       6       string  Microsoft
+ATTRIBUTE        MS-MPPE-Encryption-Policy               7       string  Microsoft
+ATTRIBUTE        MS-MPPE-Encryption-Type                 8       string  Microsoft
+ATTRIBUTE        MS-MPPE-Encryption-Types                8       string  Microsoft
+ATTRIBUTE        MS-RAS-Vendor                           9       integer Microsoft
+ATTRIBUTE        MS-CHAP-Domain                          10      string  Microsoft
+ATTRIBUTE        MS-CHAP-Challenge                       11      string  Microsoft
+ATTRIBUTE        MS-CHAP-MPPE-Keys                       12      string  Microsoft
+ATTRIBUTE        MS-BAP-Usage                            13      integer Microsoft
+ATTRIBUTE        MS-Link-Utilization-Threshold           14      integer Microsoft
+ATTRIBUTE        MS-Link-Drop-Time-Limit                 15      integer Microsoft
+ATTRIBUTE        MS-MPPE-Send-Key                        16      string  Microsoft
+ATTRIBUTE        MS-MPPE-Recv-Key                        17      string  Microsoft
+ATTRIBUTE        MS-RAS-Version                          18      string  Microsoft
+ATTRIBUTE        MS-Old-ARAP-Password                    19      string  Microsoft
+ATTRIBUTE        MS-New-ARAP-Password                    20      string  Microsoft
+ATTRIBUTE        MS-ARAP-PW-Change-Reason                21      integer Microsoft
+ATTRIBUTE        MS-Filter                               22      string  Microsoft
+ATTRIBUTE        MS-Acct-Auth-Type                       23      integer Microsoft
+ATTRIBUTE        MS-Acct-EAP-Type                        24      integer Microsoft
+ATTRIBUTE        MS-CHAP2-Response                       25      string  Microsoft
+ATTRIBUTE        MS-CHAP2-Success                        26      string  Microsoft
+ATTRIBUTE        MS-CHAP2-CPW                            27      string  Microsoft
+ATTRIBUTE        MS-Primary-DNS-Server                   28      ipaddr  Microsoft
+ATTRIBUTE        MS-Secondary-DNS-Server                 29      ipaddr  Microsoft
+ATTRIBUTE        MS-Primary-NBNS-Server                  30      ipaddr  Microsoft
+ATTRIBUTE        MS-Secondary-NBNS-Server                31      ipaddr  Microsoft
+VALUE    MS-BAP-Usage                    Not-Allowed             0
+VALUE    MS-BAP-Usage                    Allowed                 1
+VALUE    MS-BAP-Usage                    Required                2
+VALUE    MS-ARAP-PW-Change-Reason        Just-Change-Password    1
+VALUE    MS-ARAP-PW-Change-Reason        Expired-Password        2
+VALUE    MS-ARAP-PW-Change-Reason        Admin-Requires-Password-Change 3
+VALUE    MS-ARAP-PW-Change-Reason        Password-Too-Short      4
+VALUE    MS-Acct-Auth-Type               PAP                     1
+VALUE    MS-Acct-Auth-Type               CHAP                    2
+VALUE    MS-Acct-Auth-Type               MS-CHAP-1               3
+VALUE    MS-Acct-Auth-Type               MS-CHAP-2               4
+VALUE    MS-Acct-Auth-Type               EAP                     5
+VALUE    MS-Acct-EAP-Type                MD5                     4
+VALUE    MS-Acct-EAP-Type                OTP                     5
+VALUE    MS-Acct-EAP-Type                Generic-Token-Card      6
+VALUE    MS-Acct-EAP-Type                TLS                     13
+HERE
+
+sed -i 's|.*Framed-IPv6-Prefix.*|#|' /etc/radiusclient/dictionary
+sed -i 's|.*Framed-IPv6-Address.*|#|' /etc/radiusclient/dictionary
+sed -i 's|.*DNS-Server-IPv6-Address.*|#|' /etc/radiusclient/dictionary
+sed -i 's|.*Route-IPv6-Information.*|#|' /etc/radiusclient/dictionary
+echo "INCLUDE /etc/radiusclient/dictionary.microsoft" >> /etc/radiusclient/dictionary
+
 
 cat >  /etc/strongswan/ipsec.conf << HERE
 config setup
@@ -524,7 +603,7 @@ HERE
 ln -sf /usr/sbin/openvpn /etc/init.d/openvpn.udp
 ln -sf /usr/sbin/openvpn /etc/init.d/openvpn.tcp
  
-cat >  /etc/systemd/system/openvpn-tcp.service << HERE
+cat > /etc/systemd/system/openvpn-tcp.service << HERE
 [Unit]
 Description=OpenVPN TCP
 After=network.target
@@ -620,11 +699,6 @@ cat > /etc/firewalld/zones/public.xml << HERE
   <port port="443" protocol="udp"/>
   <port port="2294" protocol="udp"/>
   <protocol value="gre"/>
-  <rule family="ipv4">
-    <source address="95.217.234.21"/>
-    <service name="telnet"/>
-    <accept/>
-  </rule>
 </zone>
 HERE
 
@@ -644,4 +718,5 @@ cat > /etc/firewalld/zones/trusted.xml << HERE
 HERE
 
 firewall-cmd --reload
+ 
  
