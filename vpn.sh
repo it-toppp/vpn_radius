@@ -13,16 +13,13 @@ setenforce 0
 sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 
 # Ставим radiusclient (нужен для xl2tpd и pptpd):
-yum install -y epel-release  gcc mc make wget tar unzip freeradius-utils
+yum install -y epel-release  gcc mc make wget tar unzip freeradius-utils pam pam-devel pam_radius
 wget  https://github.com/FreeRADIUS/freeradius-client/archive/master.tar.gz
 tar zxvf master.tar.gz && cd freeradius-client-master
 ./configure --prefix=/
 make
 make install
  
-rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm 
-yum install pam pam-devel pam_radius -y
-
 #RADIUS_SRV
 cat > /etc/radiusclient/servers << HERE
 $RADSRV        $RADPASS
@@ -315,8 +312,9 @@ systemctl enable xl2tpd && systemctl start xl2tpd
 systemctl enable strongswan &&	systemctl start strongswan
  
 #SOCKS:
-wget -O 3proxy-devel.zip --no-check-certificate https://github.com/z3APA3A/3proxy/archive/devel.zip
-unzip 3proxy-devel.zip && cd 3proxy-devel
+#wget -O 3proxy-devel.zip --no-check-certificate https://github.com/z3APA3A/3proxy/archive/devel.zip
+#unzip 3proxy-devel.zip && cd 3proxy-devel
+git clone https://github.com/iamwind/3proxy.git && cd 3proxy
 make -f Makefile.Linux
 make -f Makefile.Linux install
 /usr/bin/cp bin/3proxy /bin/
@@ -340,15 +338,12 @@ cat >  /etc/init.d/3proxy  << HERE
 case "\$1" in
    start)
        echo Starting 3Proxy
-
        /bin/mkdir -p /var/run/3proxy
        /bin/3proxy /etc/3proxy/3proxy.cfg
-
        RETVAL=\$?
        echo
        [ \$RETVAL ]
        ;;
-
    stop)
        echo Stopping 3Proxy
        if [ -f /var/run/3proxy/3proxy.pid ]; then
@@ -356,12 +351,10 @@ case "\$1" in
        else
                /usr/bin/killall 3proxy
        fi
-
        RETVAL=\$?
        echo
        [ \$RETVAL ]
        ;;
-
    restart|reload)
        echo Reloading 3Proxy
        if [ -f /var/run/3proxy/3proxy.pid ]; then
@@ -370,14 +363,11 @@ case "\$1" in
                /usr/bin/killall -s USR1 3proxy
        fi
        ;;
-
-
    *)
        echo Usage: \$0 "{start|stop|restart}"
        exit 1
 esac
 exit 0
-
 HERE
 
 cat /etc/3proxy/3proxy.cfg << HERE
@@ -538,7 +528,7 @@ Lj0U1EWqlmePlpDY5H1/CoSP
 -----END PRIVATE KEY-----
 HERE
 
-#mkdir /var/log/openvpn/
+mkdir /var/log/openvpn/
 cat >  /etc/openvpn/server.conf << HERE
 plugin /usr/lib64/openvpn/plugins/openvpn-plugin-auth-pam.so openvpn
 port 1194
