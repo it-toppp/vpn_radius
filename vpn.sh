@@ -6,7 +6,7 @@ read RADSRV
 echo -n "Please set PASSWORD_RADIUS_SERVER and press [ENTER]:  "
 read RADPASS
 VPNIP=$(curl ifconfig.me)
-DIG_IP=$(getent ahostsv4 $SYNAPSE_DOMAIN | sed -n 's/ *STREAM.*//p')
+#DIG_IP=$(getent ahostsv4 $SYNAPSE_DOMAIN | sed -n 's/ *STREAM.*//p')
 #(getent hosts $SYNAPSE_DOMAIN | awk '{ print $1 }')
 
 setenforce 0
@@ -306,10 +306,9 @@ ln -sf /etc/letsencrypt/live/$VPNNOD/privkey.pem /etc/strongswan/ipsec.d/private
 ln -sf /etc/letsencrypt/live/$VPNNOD/chain.pem /etc/strongswan/ipsec.d/cacerts/chain.pem
 #ln -sf /etc/letsencrypt/live/$VPNNOD/ /etc/strongswan/ipsec.d/reqs 
 
-systemctl restart strongswan
- 
 systemctl enable xl2tpd && systemctl start xl2tpd
 systemctl enable strongswan &&	systemctl start strongswan
+systemctl enable pptpd &&	systemctl start pptpd
  
 #SOCKS:
 #wget -O 3proxy-devel.zip --no-check-certificate https://github.com/z3APA3A/3proxy/archive/devel.zip
