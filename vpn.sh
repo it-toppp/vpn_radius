@@ -13,7 +13,7 @@ setenforce 0
 sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 
 # Ставим radiusclient (нужен для xl2tpd и pptpd):
-yum install -y epel-release  gcc mc make wget tar unzip freeradius-utils pam-devel git
+yum install -y epel-release gcc mc make wget tar unzip freeradius-utils git
 wget  https://github.com/FreeRADIUS/freeradius-client/archive/master.tar.gz
 tar zxvf master.tar.gz && cd freeradius-client-master
 ./configure --prefix=/
@@ -180,7 +180,6 @@ sed -i 's|.*DNS-Server-IPv6-Address.*|#|' /etc/radiusclient/dictionary
 sed -i 's|.*Route-IPv6-Information.*|#|' /etc/radiusclient/dictionary
 echo "INCLUDE /etc/radiusclient/dictionary.microsoft" >> /etc/radiusclient/dictionary
 
-
 cat >  /etc/strongswan/ipsec.conf << HERE
 config setup
         strictcrlpolicy=yes
@@ -189,7 +188,6 @@ config setup
         virtual_private=%v4:10.1.0.0/16
         oe=off
         protostack=netkey
-
 conn ultavpn
   auto=add
   compress=no
@@ -220,11 +218,9 @@ conn ultavpn
   rightsendcert=never
 #  authby=secret
   eap_identity=%any
-
 conn L2TP-PSK-NAT
     rightsubnet=vhost:%priv
     also=L2TP-PSK-noNAT
-
 conn L2TP-PSK-noNAT
     authby=secret
     pfs=no
@@ -243,7 +239,6 @@ conn L2TP-PSK-noNAT
 HERE
 
 cat /etc/strongswan/strongswan.conf << HERE
-
 charon {
         load = charon acert attr ccm chapoly cmac constraints counters ctr des dhcp dnskey duplicheck eap-aka eap-aka-3gpp eap-aka-3gpp2 eap-dynamic eap-gtc eap-md5 eap-mschapv2 eap-peap eap-sim eap-tls eap-ttls farp fips-prf gcm gcrypt led md4 mgf1 openssl pgp pkcs11 pkcs12 pkcs7 pkcs8 pubkey random rc2 resolve sshkey stroke tpm unity xauth-eap xauth-generic xauth-noauth xauth-pam xcbc nonce aes sha1 sha2 md5 pem pkcs1 curve25519 gmp x509 curl revocation hmac vici kernel-netlink socket-default eap-identity eap-radius updown
         include /etc/strongswan/strongswan.d/charon/*.conf
@@ -281,17 +276,13 @@ HERE
 
 cat > /etc/strongswan/strongswan.d/charon/openssl.conf << HERE
 openssl {
-
     # ENGINE ID to use in the OpenSSL plugin.
     # engine_id = pkcs11
-
     # Set OpenSSL FIPS mode: disabled(0), enabled(1), Suite B enabled(2).
     fips_mode = 0
-
     # Whether to load the plugin. Can also be an integer to increase the
     # priority of this plugin.
     load = yes
-
 }
 HERE
 
@@ -336,7 +327,6 @@ cat >  /etc/init.d/3proxy  << HERE
 ### END INIT INFO
 # chkconfig: 2345 20 80
 # description: 3proxy tiny proxy server
-
 case "\$1" in
    start)
        echo Starting 3Proxy
@@ -372,9 +362,6 @@ esac
 exit 0
 HERE
 
-#cd /etc/3proxy/
-#ln -sf /usr/local/3proxy/conf /etc/3proxy/conf
- 
 cat > /usr/local/3proxy/conf/3proxy.cfg << HERE
 nscache 65536
 nserver 8.8.8.8
@@ -414,14 +401,13 @@ ExecStart=/etc/init.d/3proxy start
  
 [Install]
 WantedBy=multi-user.target
-
 HERE
 
 systemctl start 3proxy && systemctl enable 3proxy
 
 #OpenVPN:
  
-yum -y install openvpn easy-rsa chrony
+yum -y install openvpn easy-rsa chrony  pam pam-devel pam_radius
  
 cd /usr/share/easy-rsa/3
 cat > /usr/share/easy-rsa/3/vars  << HERE
@@ -442,7 +428,6 @@ HERE
 #./easyrsa gen-req vpn-server nopass
 #./easyrsa sign-req server vpn-server
 #openvpn --genkey --secret pki/ta.key
- 
 #cp -r pki/* /etc/openvpn/
  
 cp -r /usr/share/easy-rsa/3/pki/dh.pem /etc/openvpn/dh.pem
@@ -614,7 +599,6 @@ ExecStart=/etc/init.d/openvpn.udp /etc/openvpn/server.conf
 WantedBy=multi-user.target
 HERE
 
-
 cat > /etc/pam.d/openvpn << HERE
 auth	 required    	pam_radius_auth.so
 account  required    	pam_radius_auth.so
@@ -703,5 +687,6 @@ cat > /etc/firewalld/zones/trusted.xml << HERE
 HERE
 
 firewall-cmd --reload
+reboot
  
  
