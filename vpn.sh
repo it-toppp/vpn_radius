@@ -26,7 +26,8 @@ $RADSRV        $RADPASS
 HERE
 
 #L2TP:
-yum -y install xl2tpd strongswan pptpd
+yum -y install xl2tpd pptpd
+yum -y install ftp://ftp.pbone.net/mirror/archive.fedoraproject.org/epel/8.1.2020-04-22/Everything/x86_64/Packages/s/strongswan-5.7.2-1.el8.x86_64.rpm
  
 cat > /etc/xl2tpd/xl2tpd.conf << HERE
 [global]
