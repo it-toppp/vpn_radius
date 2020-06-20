@@ -27,6 +27,8 @@ HERE
 
 #L2TP:
 yum -y install xl2tpd pptpd
+modprobe nf_conntrack_proto_gre
+modprobe nf_conntrack_pptp
 yum -y install ftp://ftp.pbone.net/mirror/archive.fedoraproject.org/epel/8.1.2020-04-22/Everything/x86_64/Packages/s/strongswan-5.7.2-1.el8.x86_64.rpm
  
 cat > /etc/xl2tpd/xl2tpd.conf << HERE
