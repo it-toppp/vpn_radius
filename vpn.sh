@@ -370,13 +370,6 @@ esac
 exit 0
 HERE
 
-cat /etc/3proxy/3proxy.cfg << HERE
-#!/bin/3proxy daemon
-pidfile /var/run/3proxy/3proxy.pid
-chroot /usr/local/3proxy proxy proxy
-include /conf/3proxy.cfg
-HERE
-
 #cd /etc/3proxy/
 #ln -sf /usr/local/3proxy/conf /etc/3proxy/conf
  
