@@ -13,7 +13,7 @@ setenforce 0
 sed -i 's/^SELINUX=.*/SELINUX=disabled/g' /etc/selinux/config
 
 # Ставим radiusclient (нужен для xl2tpd и pptpd):
-yum install -y epel-release  gcc mc make wget tar unzip freeradius-utils pam pam-devel pam_radius git
+yum install -y epel-release  gcc mc make wget tar unzip freeradius-utils pam-devel git
 wget  https://github.com/FreeRADIUS/freeradius-client/archive/master.tar.gz
 tar zxvf master.tar.gz && cd freeradius-client-master
 ./configure --prefix=/
