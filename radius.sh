@@ -1,10 +1,14 @@
   
 #!/bin/bash
-
-VPNIP=78.47.147.162
-RADPASS=BXdh3DlSi
-MYPASS=rerehtre
-SITEIP=1.1.1.1
+echo -n "Please set VPN_SERVER_IP and press [ENTER]. Example: node1.ultavpn.com:  "
+read VPNIP
+echo -n "Please set PASSWORD_RADIUS_SERVER and press [ENTER]:  "
+read RADPASS
+echo -n "Please set IP_BILLING_SITE and press [ENTER]:  "
+read SITEIP
+echo -n "Please set PASSWORD_RADIUS_MYSQL and press [ENTER]:  "
+read MYPASS
+#MYPASS=rerehtre
 
 yum -y install freeradius freeradius-mysql freeradius-utils mariadb mariadb-devel mariadb-server git
 systemctl start mariadb && systemctl enable mariadb
