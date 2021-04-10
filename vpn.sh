@@ -625,15 +625,15 @@ sysctl -p /etc/sysctl.conf
 cat > /etc/firewalld/direct.xml << HERE
 <?xml version="1.0" encoding="utf-8"?>
 <direct>
-  <rule ipv="ipv4" table="nat" chain="POSTROUTING" priority="0">-o eth0 -j MASQUERADE</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i ppp0 -o eth0 -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i eth0 -o ppp0 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i ppp1 -o eth0 -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i eht0 -o ppp1 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i tun21 -o eth0 -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i eth0 -o tun21 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i tun12 -o eth0 -j ACCEPT</rule>
-  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i eth0 -o tun12 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
+  <rule ipv="ipv4" table="nat" chain="POSTROUTING" priority="0">-j MASQUERADE</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i ppp0 -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-o ppp0 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-o ppp1 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i tun21 -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-o tun21 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-i tun12 -j ACCEPT</rule>
+  <rule ipv="ipv4" table="filter" chain="FORWARD" priority="0">-o tun12 -m state --state RELATED,ESTABLISHED -j ACCEPT</rule>
   <rule ipv="ipv4" table="filter" chain="INPUT" priority="0">-p gre -j ACCEPT</rule>
 </direct>
 HERE
